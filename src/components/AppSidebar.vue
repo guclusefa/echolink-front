@@ -38,7 +38,7 @@ const navLinks = [
   },
   {
     name: 'members',
-    label: 'Travailleurs',
+    label: 'Membres',
     icon: UsersIcon,
     iconSolid: UsersIconSolid,
     needsAuth: true
@@ -70,7 +70,7 @@ if (useAuth.user) {
         <ul class="flex flex-col gap-2">
           <li v-for="link in navLinks" :key="link.name">
             <RouterLink
-              v-if="(link.needsAuth && useAuth.user && user._id) || !link.needsAuth"
+              v-if="(link.needsAuth && useAuth.user && user.id) || !link.needsAuth"
               :to="{ name: link.name }"
               class="flex items-center gap-2 p-2 rounded hover:bg-white-darker dark:hover:bg-black-lightest"
               active-class="bg-white-darkend dark:bg-black-lighter"
