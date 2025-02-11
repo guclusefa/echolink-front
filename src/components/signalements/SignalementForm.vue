@@ -2,8 +2,9 @@
 import InputElement from '@/components/elements/InputElement.vue';
 import InputgroupElement from '@/components/elements/InputgroupElement.vue';
 import LabelElement from '@/components/elements/LabelElement.vue';
+import SelectElement from '@/components/elements/SelectElement.vue';
 import { useSignalementsStore } from '@/stores/signalements';
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { toast } from 'vue3-toastify';
 import ButtonElement from '../elements/ButtonElement.vue';
@@ -12,6 +13,7 @@ const router = useRouter();
 const params = router.currentRoute?.value.params;
 
 import type { Signalement } from '@/types/Signalement';
+import { useCategoriesStore } from '@/stores/categories';
 
 const props = defineProps({
   signalement: {
@@ -76,6 +78,22 @@ const handleSubmit = async () => {
     );
   }
 };
+
+const categoriesStore = useCategoriesStore();
+let categoriesOptions = ref<{ value: string; label: string }[]>([]);
+let priorityOptions = ref<{ value: number; label: string }[]>([
+  { value: 1, label: 'Normal' },
+  { value: 2, label: 'Urgent' },
+  { value: 3, label: 'Très urgent' },
+  { value: 4, label: 'Critique' }
+]);
+
+onMounted(async () => {
+  categoriesOptions.value = categoriesStore.categories.map((category) => ({
+    value: category.id as string,
+    label: category.name
+  }));
+});
 </script>
 
 <template>
@@ -86,6 +104,22 @@ const handleSubmit = async () => {
       </template>
       <template #input>
         <InputElement v-model="signalementRef.description" :id="'description'" />
+      </template>
+    </InputgroupElement>
+    <InputgroupElement class="flex-1">
+      <template #label>
+        <LabelElement>Categorie</LabelElement>
+      </template>
+      <template #input>
+        <SelectElement :options="categoriesOptions" v-model="signalementRef.catId" />
+      </template>
+    </InputgroupElement>
+    <InputgroupElement>
+      <template #label>
+        <LabelElement>Priorité</LabelElement>
+      </template>
+      <template #input>
+        <SelectElement :options="priorityOptions" v-model="signalementRef.priorityLevel" />
       </template>
     </InputgroupElement>
     <footer class="flex justify-end gap-2">

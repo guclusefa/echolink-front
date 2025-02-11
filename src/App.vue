@@ -6,9 +6,12 @@ import AppFooter from './components/AppFooter.vue';
 import AppHeader from './components/AppHeader.vue';
 import AppSidebar from './components/AppSidebar.vue';
 import { useAuthStore } from './stores/auth';
+import { useCategoriesStore } from './stores/categories';
 
 const authStore = useAuthStore();
 const router = useRouter();
+
+const categoriesStore = useCategoriesStore();
 
 onMounted(async () => {
   if (authStore.token) {
@@ -20,6 +23,13 @@ onMounted(async () => {
         window.location.reload();
         toast.error('Vous devez vous connecter pour accéder à cette page');
       });
+    }
+  }
+  if (!categoriesStore.categories.length) {
+    try {
+      await categoriesStore.fetchCategories();
+    } catch (error) {
+      toast.error('Erreur lors du chargement des categories');
     }
   }
 });
