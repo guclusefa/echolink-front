@@ -2,7 +2,7 @@
 import ButtonElement from '@/components/elements/ButtonElement.vue';
 import ModalElement from '@/components/elements/ModalElement.vue';
 import { ref } from 'vue';
-import TaskForm from './TaskForm.vue';
+import SignalementForm from './SignalementForm.vue';
 const showModal = ref(false);
 function toggleModal() {
   showModal.value = !showModal.value;
@@ -10,8 +10,8 @@ function toggleModal() {
 </script>
 
 <template>
-  <ButtonElement primary @click="toggleModal">Ajouter une tâche</ButtonElement>
-  <ModalElement v-if="showModal" title="Ajouter une tâche" @close="toggleModal">
-    <TaskForm @close="toggleModal" :okText="'Ajouter'" />
+  <ButtonElement primary @click="toggleModal">Ajouter un signalement</ButtonElement>
+  <ModalElement v-if="showModal" title="Ajouter un signalement" @close="toggleModal">
+    <SignalementForm @close="toggleModal" :okText="'Ajouter'" />
   </ModalElement>
 </template>

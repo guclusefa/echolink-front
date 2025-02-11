@@ -37,15 +37,8 @@ const navLinks = [
     needsAuth: false
   },
   {
-    name: 'members',
-    label: 'Membres',
-    icon: UsersIcon,
-    iconSolid: UsersIconSolid,
-    needsAuth: true
-  },
-  {
-    name: 'teams',
-    label: 'Équipes',
+    name: 'signalements',
+    label: 'Signalements',
     icon: UserGroupIcon,
     iconSolid: UserGroupIconSolid,
     needsAuth: true

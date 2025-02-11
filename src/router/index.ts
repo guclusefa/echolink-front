@@ -5,11 +5,8 @@ import HomeView from '../views/HomeView.vue';
 import LoginView from '../views/auth/LoginView.vue';
 import RegisterView from '../views/auth/RegisterView.vue';
 
-import MembersView from '../views/members/MembersView.vue';
-import MemberView from '../views/members/MemberView.vue';
-
-import TeamsView from '../views/teams/TeamsView.vue';
-import TeamView from '../views/teams/TeamView.vue';
+import SignalementsView from '../views/signalements/SignalementsView.vue';
+import SignalemenView from '../views/signalements/SignalementView.vue';
 
 import { setDocumentTitle } from '@/utils/document';
 
@@ -37,27 +34,16 @@ const router = createRouter({
       name: 'register',
       component: RegisterView
     },
-    // MEMBERS
+    // Signalement
     {
-      path: '/members',
-      name: 'members',
-      component: MembersView
+      path: '/signalements',
+      name: 'signalements',
+      component: SignalementsView
     },
     {
-      path: '/members/:id',
-      name: 'member',
-      component: MemberView
-    },
-    // TEAMS
-    {
-      path: '/teams',
-      name: 'teams',
-      component: TeamsView
-    },
-    {
-      path: '/teams/:id',
-      name: 'team',
-      component: TeamView
+      path: '/signalements/:id',
+      name: 'signalement',
+      component: SignalemenView
     }
   ]
 });

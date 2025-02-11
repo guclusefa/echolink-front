@@ -2,15 +2,15 @@
 import ButtonElement from '@/components/elements/ButtonElement.vue';
 import ModalElement from '@/components/elements/ModalElement.vue';
 import { ref } from 'vue';
-import MemberForm from './MemberForm.vue';
+import SignalementForm from './SignalementForm.vue';
 
-import type { Member } from '@/types/member';
+import type { Signalement } from '@/types/Signalement';
 
 const showModal = ref(false);
 
 const props = defineProps({
-  member: {
-    type: Object as () => Member,
+  signalement: {
+    type: Object as () => Signalement,
     required: true
   }
 });
@@ -22,7 +22,7 @@ function toggleModal() {
 
 <template>
   <ButtonElement secondary @click="toggleModal">Modifier</ButtonElement>
-  <ModalElement v-if="showModal" @close="toggleModal" :title="'Modification du membre ' + props.member.firstName + ' ' + props.member.lastName + ''">
-    <MemberForm @close="toggleModal" :member="props.member" :okText="'Modifier'" edit />
+  <ModalElement v-if="showModal" @close="toggleModal" :title="'Modification de signalement ' + props.signalement.description + ''">
+    <SignalementForm @close="toggleModal" :signalement="props.signalement" :okText="'Modifier'" edit />
   </ModalElement>
 </template>

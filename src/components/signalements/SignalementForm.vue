@@ -2,7 +2,7 @@
 import InputElement from '@/components/elements/InputElement.vue';
 import InputgroupElement from '@/components/elements/InputgroupElement.vue';
 import LabelElement from '@/components/elements/LabelElement.vue';
-import { useTeamsStore } from '@/stores/teams';
+import { useSignalementsStore } from '@/stores/signalements';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { toast } from 'vue3-toastify';
@@ -11,11 +11,11 @@ import ButtonElement from '../elements/ButtonElement.vue';
 const router = useRouter();
 const params = router.currentRoute?.value.params;
 
-import type { Team } from '@/types/team';
+import type { Signalement } from '@/types/Signalement';
 
 const props = defineProps({
-  team: {
-    type: Object as () => Team,
+  signalement: {
+    type: Object as () => Signalement,
     required: false
   },
   okText: {
@@ -28,47 +28,51 @@ const props = defineProps({
   }
 });
 
-const teamRef = ref<Team>({
-  name: ''
+const signalementRef = ref<Signalement>({
+  description: '',
+  catId: 0,
+  priorityLevel: 0,
+  longitude: 0,
+  latitude: 0
 });
 
-if (props.team) {
-  teamRef.value = props.team;
+if (props.signalement) {
+  signalementRef.value = props.signalement;
 }
 
 const $emit = defineEmits(['close']);
 
-const teamsStore = useTeamsStore();
+const signalementsStore = useSignalementsStore();
 
 const handleSubmit = async () => {
   // Check if all fields are filled
-  if (!teamRef.value.name) {
+  if (!signalementRef.value.description) {
     toast.error('Veuillez remplir tous les champs');
     return;
   }
 
   try {
     // Update or create
-    if (props.edit && teamRef.value._id) {
-      await teamsStore.updateTeam(teamRef.value);
+    if (props.edit && signalementRef.value.id) {
+      await signalementsStore.updateSignalement(signalementRef.value);
     } else {
-      await teamsStore.createTeam(teamRef.value);
+      await signalementsStore.createSignalement(signalementRef.value);
     }
     // Display success message
-    toast.success(props.edit ? 'Équipe modifiée avec succès' : 'Équipe ajoutée avec succès');
+    toast.success(props.edit ? 'signalement modifié avec succès' : 'signalement ajouté avec succès');
 
     // close modal if we are in one
     $emit('close');
 
     // Refresh list & redirect
-    await teamsStore.fetchTeams();
-    router.push({ name: 'teams' });
+    await signalementsStore.fetchSignalements();
+    router.push({ name: 'signalements' });
   } catch (error) {
     // Display error message
     toast.error(
       props.edit
-        ? 'Une erreur est survenue lors de la modification de léquipe'
-        : "Une erreur est survenue lors de l'ajout de léquipe"
+        ? 'Une erreur est survenue lors de la modification de signalement'
+        : "Une erreur est survenue lors de l'ajout de signalement"
     );
   }
 };
@@ -78,10 +82,10 @@ const handleSubmit = async () => {
   <form class="flex flex-col gap-5" @submit.prevent="handleSubmit">
     <InputgroupElement>
       <template #label>
-        <LabelElement>Nom</LabelElement>
+        <LabelElement>Description</LabelElement>
       </template>
       <template #input>
-        <InputElement v-model="teamRef.name" :id="'name'" />
+        <InputElement v-model="signalementRef.description" :id="'description'" />
       </template>
     </InputgroupElement>
     <footer class="flex justify-end gap-2">
