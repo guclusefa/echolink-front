@@ -59,7 +59,7 @@ onMounted(() => {
     // icon
     .setIcon(
       L.icon({
-        iconUrl: '/public/marker-icon.png',
+        iconUrl: '/marker-icon.png',
         iconSize: [25, 41],
         iconAnchor: [12, 41],
         popupAnchor: [1, -34],
