@@ -9,6 +9,8 @@ import toast from './services/toast';
 
 import ganttastic from '@infectoone/vue-ganttastic';
 
+import 'leaflet/dist/leaflet.css';
+
 import './index.css';
 
 const pinia = createPinia();

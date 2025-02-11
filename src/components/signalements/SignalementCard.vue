@@ -1,13 +1,17 @@
 <script setup lang="ts">
 import SignalementDeleteButton from './SignalementDeleteButton.vue';
 import SignalementEditButton from './SignalementEditButton.vue';
+import SignalementCloseButton from './SignalementCloseButton.vue';
 
 import { useSignalementsStore } from '@/stores/signalements';
 import type { Signalement } from '@/types/Signalement';
-import { onMounted, ref } from 'vue';
-import { toast } from 'vue3-toastify';
+import { onMounted, ref, computed } from 'vue';
+import L from 'leaflet';
+import { useCategoriesStore } from '@/stores/categories';
+import { useAuthStore } from '@/stores/auth';
 
 const signalementsStore = useSignalementsStore();
+const categoriesStore = useCategoriesStore();
 
 const props = defineProps({
   signalement: {
@@ -16,27 +20,96 @@ const props = defineProps({
   }
 });
 
+
+const useAuth = useAuthStore();
+let user: any = null;
+if (useAuth.user) {
+  user = useAuth.user;
+}
+
+const isContentMine = computed(() => {
+  if (!user) return false;
+  return user.id === props.signalement.userId;
+});
+
 let signalementId = props.signalement.id;
 if (!signalementId) {
   throw new Error('Signalement ID is required');
 }
+
+// Attente du chargement des catégories avant de récupérer l'option correcte
+const selectedCategory = computed(() => {
+  if (!categoriesStore.categories.length) return 'Chargement...';
+  return categoriesStore.categories.find((c) => c.id === props.signalement.catId)?.name || 'Inconnu';
+});
+
+// Gestion de la carte Leaflet
+const map = ref<L.Map | null>(null);
+const marker = ref<L.Marker | null>(null);
+
+onMounted(() => {
+  if (!props.signalement.latitude || !props.signalement.longitude) return;
+
+  map.value = L.map(`map-${signalementId}`).setView(
+    [props.signalement.latitude, props.signalement.longitude],
+    13
+  );
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map.value);
+
+  marker.value = L.marker([props.signalement.latitude, props.signalement.longitude])
+    .addTo(map.value)
+    .bindPopup(props.signalement.description)
+    .openPopup();
+});
+
+const priorityOptions = ref<{ value: number; label: string }[]>([
+  { value: 1, label: 'Normal' },
+  { value: 2, label: 'Urgent' },
+  { value: 3, label: 'Très urgent' },
+  { value: 4, label: 'Critique' }
+]);
 </script>
 
 <template>
-  <article
-    class="p-4 bg-white rounded-lg shadow-xl flex flex-col gap-4 h-full dark:bg-black-lighter"
-    v-if="props.signalement.id"
-  >
+  <article class="p-4 bg-white rounded-lg shadow-xl flex flex-col gap-4 h-full dark:bg-black-lighter"
+    v-if="props.signalement.id">
     <RouterLink :to="{ name: 'signalement', params: { id: props.signalement.id } }">
       <header class="flex items-center justify-between">
         <h3 class="text-lg font-semibold">{{ props.signalement.description }}</h3>
       </header>
     </RouterLink>
-    <footer class="flex items-center gap-2">
+
+    <p class="text-sm">Catégorie: {{ selectedCategory }}</p>
+    <p class="text-sm">Priorité: {{ priorityOptions.find((p) => p.value === props.signalement.priorityLevel)?.label }}
+    </p>
+
+    <!-- Carte Leaflet -->
+    <div v-if="props.signalement.latitude && props.signalement.longitude" :id="`map-${signalementId}`"
+      class="h-40 w-full rounded-lg border"></div>
+
+    <p class="text-sm" v-if="!props.signalement.closed_at">
+      Publié le {{ props.signalement.created_at ? new Date(props.signalement.created_at).toLocaleDateString() : 'Date inconnue' }} par {{ props.signalement.userId }}
+    </p>
+
+    <p class="text-sm" v-if="props.signalement.closed_at">
+      Fermé le {{ props.signalement.closed_at ? new Date(props.signalement.closed_at).toLocaleDateString() : 'Date inconnue' }} par {{ props.signalement.userId }}
+    </p>
+
+    <footer class="flex items-center gap-2" v-if="isContentMine">
       <SignalementEditButton :signalement="props.signalement" />
-    </footer>
-    <footer class="flex items-center gap-2">
       <SignalementDeleteButton :signalement="props.signalement" />
+      <SignalementCloseButton :signalement="props.signalement" />
     </footer>
   </article>
 </template>
+
+<style scoped>
+/* Taille fixe pour la carte */
+div[id^="map-"] {
+  height: 200px;
+  border-radius: 8px;
+}
+</style>

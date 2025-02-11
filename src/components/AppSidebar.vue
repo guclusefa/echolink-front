@@ -41,7 +41,7 @@ const navLinks = [
     label: 'Signalements',
     icon: UserGroupIcon,
     iconSolid: UserGroupIconSolid,
-    needsAuth: true
+    needsAuth: false
   }
 ];
 

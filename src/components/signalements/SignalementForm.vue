@@ -8,16 +8,13 @@ import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { toast } from 'vue3-toastify';
 import ButtonElement from '../elements/ButtonElement.vue';
+import { useCategoriesStore } from '@/stores/categories';
+import L from 'leaflet';
 
 const router = useRouter();
-const params = router.currentRoute?.value.params;
-
-import type { Signalement } from '@/types/Signalement';
-import { useCategoriesStore } from '@/stores/categories';
-
 const props = defineProps({
   signalement: {
-    type: Object as () => Signalement,
+    type: Object as () => { description: string; catId: number; priorityLevel: number; longitude: number; latitude: number },
     required: false
   },
   okText: {
@@ -30,12 +27,12 @@ const props = defineProps({
   }
 });
 
-const signalementRef = ref<Signalement>({
+const signalementRef = ref({
   description: '',
   catId: 0,
   priorityLevel: 0,
-  longitude: 0,
-  latitude: 0
+  longitude: 5.7245,
+  latitude: 45.1885,
 });
 
 if (props.signalement) {
@@ -43,57 +40,73 @@ if (props.signalement) {
 }
 
 const $emit = defineEmits(['close']);
-
 const signalementsStore = useSignalementsStore();
-
-const handleSubmit = async () => {
-  // Check if all fields are filled
-  if (!signalementRef.value.description) {
-    toast.error('Veuillez remplir tous les champs');
-    return;
-  }
-
-  try {
-    // Update or create
-    if (props.edit && signalementRef.value.id) {
-      await signalementsStore.updateSignalement(signalementRef.value);
-    } else {
-      await signalementsStore.createSignalement(signalementRef.value);
-    }
-    // Display success message
-    toast.success(props.edit ? 'signalement modifié avec succès' : 'signalement ajouté avec succès');
-
-    // close modal if we are in one
-    $emit('close');
-
-    // Refresh list & redirect
-    await signalementsStore.fetchSignalements();
-    router.push({ name: 'signalements' });
-  } catch (error) {
-    // Display error message
-    toast.error(
-      props.edit
-        ? 'Une erreur est survenue lors de la modification de signalement'
-        : "Une erreur est survenue lors de l'ajout de signalement"
-    );
-  }
-};
-
 const categoriesStore = useCategoriesStore();
-let categoriesOptions = ref<{ value: string; label: string }[]>([]);
-let priorityOptions = ref<{ value: number; label: string }[]>([
+const categoriesOptions = ref<{ value: string; label: string }[]>([]);
+const priorityOptions = ref<{ value: number; label: string }[]>([
   { value: 1, label: 'Normal' },
   { value: 2, label: 'Urgent' },
   { value: 3, label: 'Très urgent' },
   { value: 4, label: 'Critique' }
 ]);
 
+// Leaflet Map
+const map = ref<L.Map | null>(null);
+const marker = ref<L.Marker | null>(null);
+
 onMounted(async () => {
   categoriesOptions.value = categoriesStore.categories.map((category) => ({
     value: category.id as string,
     label: category.name
   }));
+
+  const defaultLat = signalementRef.value.latitude || 45.1885;
+  const defaultLng = signalementRef.value.longitude || 5.7245;
+
+  map.value = L.map('map').setView([defaultLat, defaultLng], 13); // Centrage sur la position enregistrée ou Grenoble
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map.value);
+
+  marker.value = L.marker([defaultLat, defaultLng], { draggable: true }).addTo(map.value);
+
+  map.value.on('click', (e: L.LeafletMouseEvent) => {
+    if (marker.value) {
+      marker.value.setLatLng(e.latlng);
+    }
+    signalementRef.value.latitude = e.latlng.lat;
+    signalementRef.value.longitude = e.latlng.lng;
+  });
+
+  // Mise à jour des coordonnées du signalement si en mode édition
+  if (props.edit && signalementRef.value.latitude && signalementRef.value.longitude) {
+    marker.value.setLatLng([signalementRef.value.latitude, signalementRef.value.longitude]);
+    map.value.setView([signalementRef.value.latitude, signalementRef.value.longitude], 13);
+  }
 });
+
+const handleSubmit = async () => {
+  if (!signalementRef.value.description || !signalementRef.value.latitude || !signalementRef.value.longitude || !signalementRef.value.catId || !signalementRef.value.priorityLevel) {
+    toast.error('Veuillez remplir tous les champs et sélectionner un emplacement sur la carte');
+    return;
+  }
+
+  try {
+    if (props.edit && signalementRef.value.id) {
+      await signalementsStore.updateSignalement(signalementRef.value);
+    } else {
+      await signalementsStore.createSignalement(signalementRef.value);
+    }
+
+    toast.success(props.edit ? 'Signalement modifié avec succès' : 'Signalement ajouté avec succès');
+    $emit('close');
+    await signalementsStore.fetchSignalements();
+    router.push({ name: 'signalements' });
+  } catch (error) {
+    toast.error(props.edit ? 'Erreur lors de la modification' : "Erreur lors de l'ajout");
+  }
+};
 </script>
 
 <template>
@@ -103,17 +116,19 @@ onMounted(async () => {
         <LabelElement>Description</LabelElement>
       </template>
       <template #input>
-        <InputElement v-model="signalementRef.description" :id="'description'" />
+        <InputElement v-model="signalementRef.description" id="description" />
       </template>
     </InputgroupElement>
+    
     <InputgroupElement class="flex-1">
       <template #label>
-        <LabelElement>Categorie</LabelElement>
+        <LabelElement>Catégorie</LabelElement>
       </template>
       <template #input>
         <SelectElement :options="categoriesOptions" v-model="signalementRef.catId" />
       </template>
     </InputgroupElement>
+    
     <InputgroupElement>
       <template #label>
         <LabelElement>Priorité</LabelElement>
@@ -122,9 +137,25 @@ onMounted(async () => {
         <SelectElement :options="priorityOptions" v-model="signalementRef.priorityLevel" />
       </template>
     </InputgroupElement>
+    
+    <div class="flex flex-col gap-2">
+      <LabelElement>Localisation</LabelElement>
+      <div id="map" style="height: 300px; border-radius: 8px;"></div>
+      <div class="text-sm text-gray-600">Cliquez sur la carte pour définir l'emplacement.</div>
+    </div>
+    
     <footer class="flex justify-end gap-2">
       <ButtonElement @click="$emit('close')">Annuler</ButtonElement>
       <ButtonElement primary type="submit">{{ okText }}</ButtonElement>
     </footer>
   </form>
 </template>
+
+<style scoped>
+#map {
+  width: 100%;
+  height: 300px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+</style>
