@@ -60,6 +60,14 @@ export const useSignalementsStore = defineStore({
         throw error;
       }
     },
+    async closeSignalement(id: string) {
+      try {
+        await api.put(`${url}/${id}/close`);
+      } catch (error) {
+        console.error(error);
+        throw error;
+      }
+    },
     resetSignalement() {
       this.signalement = {} as Signalement;
     }

@@ -42,7 +42,7 @@ defineEmits(['close', 'validate']);
             leave-to="opacity-0 scale-95"
           >
             <DialogPanel
-              class="flex flex-col gap-5 w-full max-w-md transform overflow-hidden p-5 text-left align-middle shadow-xl transition-all bg-white dark:bg-black-lightend"
+              class="flex flex-col gap-5 w-full max-w-xl transform overflow-hidden p-5 text-left align-middle shadow-xl transition-all bg-white dark:bg-black-lightend"
             >
               <header>
                 <DialogTitle as="h3" class="text-lg font-medium leading-6">

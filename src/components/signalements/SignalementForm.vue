@@ -119,6 +119,12 @@ const handleSubmit = async () => {
         <InputElement v-model="signalementRef.description" id="description" />
       </template>
     </InputgroupElement>
+
+    <div class="flex flex-col gap-2">
+      <LabelElement>Localisation</LabelElement>
+      <div id="map" style="height: 300px; border-radius: 8px;"></div>
+      <div class="text-sm text-gray-600">Cliquez sur la carte pour définir l'emplacement.</div>
+    </div>
     
     <InputgroupElement class="flex-1">
       <template #label>
@@ -137,12 +143,6 @@ const handleSubmit = async () => {
         <SelectElement :options="priorityOptions" v-model="signalementRef.priorityLevel" />
       </template>
     </InputgroupElement>
-    
-    <div class="flex flex-col gap-2">
-      <LabelElement>Localisation</LabelElement>
-      <div id="map" style="height: 300px; border-radius: 8px;"></div>
-      <div class="text-sm text-gray-600">Cliquez sur la carte pour définir l'emplacement.</div>
-    </div>
     
     <footer class="flex justify-end gap-2">
       <ButtonElement @click="$emit('close')">Annuler</ButtonElement>

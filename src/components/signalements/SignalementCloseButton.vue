@@ -23,13 +23,13 @@ function toggleModal() {
 
 const signalementsStore = useSignalementsStore();
 
-const deleteSignalement = async () => {
+const closeSignalement = async () => {
   // Check if has an id
   if (!props.signalement.id) return;
 
   try {
     // Delete signalement from the store
-    await signalementsStore.deleteSignalement(props.signalement.id);
+    await signalementsStore.closeSignalement(props.signalement.id);
 
     // Display success message
     toast.success('signalement a été fermé avec succès');
@@ -44,11 +44,11 @@ const deleteSignalement = async () => {
 </script>
 
 <template>
-  <ButtonElement danger @click="toggleModal">Supprimer</ButtonElement>
+  <ButtonElement danger @click="toggleModal">Fermer</ButtonElement>
   <ModalElement
     v-if="showModal"
     @close="toggleModal"
-    :title="'Suppression de signalement ' + props.signalement.description"
+    :title="'Fermeture de signalement ' + props.signalement.description"
   >
     <div>
       <p>
@@ -56,7 +56,7 @@ const deleteSignalement = async () => {
       </p>
       <footer class="flex justify-end gap-2">
         <ButtonElement @click="toggleModal">Annuler</ButtonElement>
-        <ButtonElement danger type="submit" @click="deleteSignalement">Fermer</ButtonElement>
+        <ButtonElement danger type="submit" @click="closeSignalement">Fermer</ButtonElement>
       </footer>
     </div>
   </ModalElement>

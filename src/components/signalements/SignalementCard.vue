@@ -7,11 +7,10 @@ import { useSignalementsStore } from '@/stores/signalements';
 import type { Signalement } from '@/types/Signalement';
 import { onMounted, ref, computed } from 'vue';
 import L from 'leaflet';
-import { useCategoriesStore } from '@/stores/categories';
+
 import { useAuthStore } from '@/stores/auth';
 
 const signalementsStore = useSignalementsStore();
-const categoriesStore = useCategoriesStore();
 
 const props = defineProps({
   signalement: {
@@ -36,12 +35,6 @@ let signalementId = props.signalement.id;
 if (!signalementId) {
   throw new Error('Signalement ID is required');
 }
-
-// Attente du chargement des catégories avant de récupérer l'option correcte
-const selectedCategory = computed(() => {
-  if (!categoriesStore.categories.length) return 'Chargement...';
-  return categoriesStore.categories.find((c) => c.id === props.signalement.catId)?.name || 'Inconnu';
-});
 
 // Gestion de la carte Leaflet
 const map = ref<L.Map | null>(null);
@@ -82,7 +75,7 @@ const priorityOptions = ref<{ value: number; label: string }[]>([
       </header>
     </RouterLink>
 
-    <p class="text-sm">Catégorie: {{ selectedCategory }}</p>
+    <p class="text-sm">Catégorie: {{ props.signalement.categoryName }}</p>
     <p class="text-sm">Priorité: {{ priorityOptions.find((p) => p.value === props.signalement.priorityLevel)?.label }}
     </p>
 
@@ -91,14 +84,18 @@ const priorityOptions = ref<{ value: number; label: string }[]>([
       class="h-40 w-full rounded-lg border"></div>
 
     <p class="text-sm" v-if="!props.signalement.closed_at">
-      Publié le {{ props.signalement.created_at ? new Date(props.signalement.created_at).toLocaleDateString() : 'Date inconnue' }} par {{ props.signalement.userId }}
+      Publié le {{ props.signalement.created_at ?
+        new Date(props.signalement.created_at).toLocaleDateString() : 'Date inconnue' }} par {{ props.signalement.userName
+      }} {{ props.signalement.userLastName }}
     </p>
 
     <p class="text-sm" v-if="props.signalement.closed_at">
-      Fermé le {{ props.signalement.closed_at ? new Date(props.signalement.closed_at).toLocaleDateString() : 'Date inconnue' }} par {{ props.signalement.userId }}
+      Fermé le {{ props.signalement.closed_at ?
+        new Date(props.signalement.closed_at).toLocaleDateString() : 'Date inconnue' }} par {{ props.signalement.userName
+      }} {{ props.signalement.userLastName }}
     </p>
 
-    <footer class="flex items-center gap-2" v-if="isContentMine">
+    <footer class="flex items-center gap-2" v-if="isContentMine && !props.signalement.closed_at">
       <SignalementEditButton :signalement="props.signalement" />
       <SignalementDeleteButton :signalement="props.signalement" />
       <SignalementCloseButton :signalement="props.signalement" />
