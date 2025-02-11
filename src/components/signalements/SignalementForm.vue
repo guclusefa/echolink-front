@@ -71,6 +71,16 @@ onMounted(async () => {
 
   marker.value = L.marker([defaultLat, defaultLng], { draggable: true }).addTo(map.value);
 
+  marker.value.setIcon(
+    L.icon({
+      iconUrl: '/public/marker-icon.png',
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowSize: [41, 41]
+    })
+  );
+
   map.value.on('click', (e: L.LeafletMouseEvent) => {
     if (marker.value) {
       marker.value.setLatLng(e.latlng);
@@ -125,7 +135,7 @@ const handleSubmit = async () => {
       <div id="map" style="height: 300px; border-radius: 8px;"></div>
       <div class="text-sm text-gray-600">Cliquez sur la carte pour définir l'emplacement.</div>
     </div>
-    
+
     <InputgroupElement class="flex-1">
       <template #label>
         <LabelElement>Catégorie</LabelElement>
@@ -134,7 +144,7 @@ const handleSubmit = async () => {
         <SelectElement :options="categoriesOptions" v-model="signalementRef.catId" />
       </template>
     </InputgroupElement>
-    
+
     <InputgroupElement>
       <template #label>
         <LabelElement>Priorité</LabelElement>
@@ -143,7 +153,7 @@ const handleSubmit = async () => {
         <SelectElement :options="priorityOptions" v-model="signalementRef.priorityLevel" />
       </template>
     </InputgroupElement>
-    
+
     <footer class="flex justify-end gap-2">
       <ButtonElement @click="$emit('close')">Annuler</ButtonElement>
       <ButtonElement primary type="submit">{{ okText }}</ButtonElement>

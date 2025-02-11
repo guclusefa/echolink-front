@@ -55,7 +55,17 @@ onMounted(() => {
   marker.value = L.marker([props.signalement.latitude, props.signalement.longitude])
     .addTo(map.value)
     .bindPopup(props.signalement.description)
-    .openPopup();
+    .openPopup()
+    // icon
+    .setIcon(
+      L.icon({
+        iconUrl: '/public/marker-icon.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+      })
+    );
 });
 
 const priorityOptions = ref<{ value: number; label: string }[]>([
