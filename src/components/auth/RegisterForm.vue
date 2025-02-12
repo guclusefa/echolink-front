@@ -24,6 +24,23 @@ const user = ref({
   latitude: '',
 });
 
+const getLocation = () => {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        user.value.latitude = position.coords.latitude.toString();
+        user.value.longitude = position.coords.longitude.toString();
+        toast.success('Localisation récupérée avec succès');
+      },
+      (error) => {
+        toast.error('Impossible de récupérer la localisation');
+      }
+    );
+  } else {
+    toast.error('La géolocalisation est n\'pas supportée par votre navigateur');
+  }
+};
+
 const handleSubmit = async () => {
   if (!user.value.email || !user.value.password || !user.value.passwordConfirmation || !user.value.name || !user.value.lastName) {
     toast.error('Veuillez remplir les champs obligatoires');
@@ -40,6 +57,8 @@ const handleSubmit = async () => {
       name: user.value.name,
       lastName: user.value.lastName,
       password: user.value.password,
+      latitude: user.value.latitude,
+      longitude: user.value.longitude,
     });
     router.push({ name: 'home' }).then(() => {
       toast.success('Un email de confirmation vous a été envoyé');
@@ -103,6 +122,12 @@ const handleSubmit = async () => {
           />
         </template>
       </InputgroupElement>
+    </div>
+    <div class="flex flex-col sm:flex-row gap-3">
+      <ButtonElement type="button" @click="getLocation">Obtenir ma localisation</ButtonElement>
+      <span v-if="user.latitude && user.longitude" class="text-sm text-gray">
+        Latitude: {{ user.latitude }}, Longitude: {{ user.longitude }}
+      </span>
     </div>
     <div class="flex items-center gap-2">
       <input type="checkbox" class="form-checkbox" />
