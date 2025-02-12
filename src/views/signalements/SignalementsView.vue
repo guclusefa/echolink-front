@@ -60,7 +60,7 @@ onMounted(async () => {
 <template>
   <WrapperElement>
     <div class="text-gray-600 text-sm mb-4">Votre localisation approximative : {{ locationAddress }}</div>
-    <div class="text-gray-600 text-sm mb-4">Les signalent sont triés en fontction des plus proches de votre localisation.</div>
+    <div class="text-gray-600 text-sm mb-4">Les signalements sont triés en fontction des plus proches de votre localisation.</div>
     <SectionElement title="Signalements">
       <template #actions v-if="useAuth.user && user.id">
         <SignalementAddButton />

@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue';
 import SignalementCard from './SignalementCard.vue';
 import SelectElement from '@/components/elements/SelectElement.vue';
 import { useCategoriesStore } from '@/stores/categories';
+import ButtonElement from '@/components/elements/ButtonElement.vue';
 
 const props = defineProps({
   signalements: {
@@ -22,7 +23,7 @@ const priorityOptions = [
 ];
 
 const filteredSignalements = computed(() => {
-  return props.signalements.filter(s => 
+  return props.signalements.filter(s =>
     (selectedCategory.value === null || s.categoryId == selectedCategory.value) && // Loose equality for correct filtering
     (showClosed.value ? s.closed_at : !s.closed_at)
   );
@@ -47,19 +48,28 @@ const categoriesOptions = computed(() =>
 onMounted(async () => {
   await categoriesStore.fetchCategories();
 });
+
+// Fonction pour réinitialiser les filtres
+const resetFilters = () => {
+  selectedCategory.value = null;
+  showClosed.value = false;
+};
 </script>
 
 <template>
   <section>
     <p class="text-sm text-gray mb-4">{{ filteredSignalements.length }} signalements</p>
-    
+
     <div class="flex gap-4 mb-4">
-      <SelectElement v-model="selectedCategory" :options="categoriesOptions" placeholder="Filtrer par catégorie" />
+      <div class="flex gap-4">
+        <SelectElement v-model="selectedCategory" :options="categoriesOptions" placeholder="Filtrer par catégorie" />
+      </div>
       <label class="flex items-center gap-2">
-        <input type="checkbox" v-model="showClosed" /> Afficher les signalements fermés
+        <input type="checkbox" v-model="showClosed" /> Cloturés
       </label>
+      <ButtonElement @click="resetFilters">Réinitialiser les filtres</ButtonElement>
     </div>
-    
+
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       <div v-for="group in groupedSignalements" :key="group.label" :class="[group.color, 'p-4 rounded-lg']">
         <h2 class="text-lg font-bold mb-2">{{ group.label }}</h2>
