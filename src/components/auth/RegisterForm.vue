@@ -42,7 +42,7 @@ const handleSubmit = async () => {
       password: user.value.password,
     });
     router.push({ name: 'home' }).then(() => {
-      window.location.reload();
+      toast.success('Un email de confirmation vous a été envoyé');
     });
   } catch (error) {
     toast.error('Cette adresse email ou nom d\'utilisateur est déjà utilisée');

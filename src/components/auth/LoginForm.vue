@@ -30,7 +30,11 @@ const handleSubmit = async () => {
       window.location.reload();
     });
   } catch (error) {
-    toast.error("Email ou mot de passe incorrect");
+    if (error.response && error.response.status === 403) {
+      toast.error("Votre compte n'est pas encore vérifié. Veuillez vérifier votre email.");
+    } else {
+      toast.error("Email ou mot de passe incorrect");
+    }
   } finally {
     loading.value = false;
   }
