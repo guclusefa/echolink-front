@@ -1,11 +1,14 @@
 export interface Signalement {
-  id?: string;
-  userId?: string;
-  catId: number;
+  id: number;
   description: string;
-  priorityLevel: number;
-  longitude: number;
   latitude: number;
-  created_at?: string;
+  longitude: number;
+  category_id: number;
+  categoryName: string;
+  priority_level: string;
+  user_id: number;
+  userName: string;
+  userLastName: string;
+  created_at: string;
   closed_at?: string;
 }

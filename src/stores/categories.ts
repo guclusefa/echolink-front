@@ -3,7 +3,7 @@ import { defineStore } from 'pinia';
 
 import type { Category } from '@/types/Category';
 
-const url = '/categories';
+const url = '/api/categories';
 
 export const useCategoriesStore = defineStore({
   id: 'categories',
@@ -14,10 +14,12 @@ export const useCategoriesStore = defineStore({
   actions: {
     async fetchCategories() {
       try {
+        console.log('Fetching categories from:', url);
         const response = await api.get(url);
+        console.log('Categories response:', response.data);
         this.categories = response.data;
       } catch (error) {
-        console.error(error);
+        console.error('Error fetching categories:', error);
         throw error;
       }
     },

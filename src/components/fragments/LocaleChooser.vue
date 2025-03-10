@@ -8,7 +8,6 @@ import SelectElement from '../elements/SelectElement.vue';
 const locale = ref(getCurrentLocale());
 const route = useRoute();
 
-// turn getAvailableLocales() into an array of SelectOption
 const localesOptions: SelectOption[] = Object.entries(getAvailableLocales()).map(
   ([key, value]) => ({
     value: key,

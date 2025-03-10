@@ -44,15 +44,13 @@ const getLocation = () => {
 
 onMounted(async () => {
   getLocation();
-  if (!signalementsStore.signalements.length) {
-    try {
-      loading.value = true;
-      await signalementsStore.fetchSignalements();
-    } catch (error) {
-      toast.error('Erreur lors du chargement des signalements.');
-    } finally {
-      loading.value = false;
-    }
+  try {
+    loading.value = true;
+    await signalementsStore.fetchSignalements();
+  } catch (error) {
+    toast.error('Erreur lors du chargement des signalements.');
+  } finally {
+    loading.value = false;
   }
 });
 </script>

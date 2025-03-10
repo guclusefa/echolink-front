@@ -3,7 +3,7 @@ import { defineStore } from 'pinia';
 
 import type { Signalement } from '@/types/Signalement';
 
-const url = '/signalements';
+const url = '/api/signalements';
 
 const haversineDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
   const R = 6371; // Rayon de la Terre en km
@@ -28,15 +28,6 @@ export const useSignalementsStore = defineStore({
     async fetchSignalements() {
       try {
         const response = await api.get(url);
-        this.signalements = response.data;
-      } catch (error) {
-        console.error(error);
-        throw error;
-      }
-    },
-    async fetchSignalements() {
-      try {
-        const response = await api.get(url);
         const signalements = response.data;
 
         // Tri des signalements en fonction de la distance
@@ -50,20 +41,35 @@ export const useSignalementsStore = defineStore({
               const distanceB = haversineDistance(userLat, userLon, b.latitude, b.longitude);
               return distanceA - distanceB;
             });
-
-            this.signalements = signalements;
           });
         }
+
+        this.signalements = signalements;
       } catch (error) {
         console.error(error);
         throw error;
       }
     },
+    async fetchSignalement(id: string) {
+      try {
+        console.log('Fetching signalement with ID:', id);
+        const response = await api.get(`${url}/${id}`);
+        console.log('Signalement response:', response.data);
+        this.signalement = response.data;
+        return response.data;
+      } catch (error) {
+        console.error('Error fetching signalement:', error);
+        throw error;
+      }
+    },
     async createSignalement(signalement: Signalement) {
       try {
-        await api.post(url, signalement);
+        console.log('Creating signalement with data:', signalement);
+        const response = await api.post(url, signalement);
+        console.log('Create signalement response:', response);
+        return response.data;
       } catch (error) {
-        console.error(error);
+        console.error('Error creating signalement:', error);
         throw error;
       }
     },
@@ -91,7 +97,7 @@ export const useSignalementsStore = defineStore({
     },
     async closeSignalement(id: string) {
       try {
-        await api.put(`${url}/${id}/close`);
+        await api.post(`${url}/${id}/close`);
       } catch (error) {
         console.error(error);
         throw error;

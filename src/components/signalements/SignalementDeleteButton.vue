@@ -24,17 +24,13 @@ function toggleModal() {
 const signalementsStore = useSignalementsStore();
 
 const deleteSignalement = async () => {
-  // Check if has an id
   if (!props.signalement.id) return;
 
   try {
-    // Delete signalement from the store
     await signalementsStore.deleteSignalement(props.signalement.id);
 
-    // Display success message
     toast.success('signalement a été supprimé avec succès');
 
-    // Refresh list & redirect
     await signalementsStore.fetchSignalements();
     router.push({ name: 'signalements' });
   } catch (error) {

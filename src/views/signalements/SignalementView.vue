@@ -16,7 +16,6 @@ const signalementsStore = useSignalementsStore();
 onMounted(async () => {
   if (typeof params.id === 'string') {
     try {
-      // delete previous to avoid flickering
       signalementsStore.resetSignalement();
       await signalementsStore.fetchSignalement(params.id);
     } catch (error) {

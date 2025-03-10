@@ -14,7 +14,14 @@ import L from 'leaflet';
 const router = useRouter();
 const props = defineProps({
   signalement: {
-    type: Object as () => { description: string; catId: number; priorityLevel: number; longitude: number; latitude: number },
+    type: Object as () => { 
+      id?: number;
+      description: string; 
+      category_id: number; 
+      priority_level: number; 
+      longitude: number; 
+      latitude: number 
+    },
     required: false
   },
   okText: {
@@ -27,16 +34,38 @@ const props = defineProps({
   }
 });
 
+const priorityMapping = {
+  'low': 1,
+  'medium': 2,
+  'high': 3,
+  'urgent': 4
+};
+
+const reversePriorityMapping = {
+  1: 'low',
+  2: 'medium',
+  3: 'high',
+  4: 'urgent'
+};
+
 const signalementRef = ref({
   description: '',
-  catId: 0,
-  priorityLevel: 0,
+  category_id: 0,
+  priority_level: 0,
   longitude: 5.7245,
   latitude: 45.1885,
 });
 
 if (props.signalement) {
-  signalementRef.value = props.signalement;
+  const priority = typeof props.signalement.priority_level === 'string' 
+    ? priorityMapping[props.signalement.priority_level as keyof typeof priorityMapping] 
+    : props.signalement.priority_level;
+
+  signalementRef.value = {
+    ...signalementRef.value,
+    ...props.signalement,
+    priority_level: priority
+  };
 }
 
 const $emit = defineEmits(['close']);
@@ -50,20 +79,20 @@ const priorityOptions = ref<{ value: number; label: string }[]>([
   { value: 4, label: 'Critique' }
 ]);
 
-// Leaflet Map
 const map = ref<L.Map | null>(null);
 const marker = ref<L.Marker | null>(null);
 
 onMounted(async () => {
+  await categoriesStore.fetchCategories();
   categoriesOptions.value = categoriesStore.categories.map((category) => ({
-    value: category.id as string,
+    value: Number(category.id),
     label: category.name
   }));
 
   const defaultLat = signalementRef.value.latitude || 45.1885;
   const defaultLng = signalementRef.value.longitude || 5.7245;
 
-  map.value = L.map('map').setView([defaultLat, defaultLng], 13); // Centrage sur la position enregistrée ou Grenoble
+  map.value = L.map('map').setView([defaultLat, defaultLng], 13);
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap contributors'
@@ -89,7 +118,6 @@ onMounted(async () => {
     signalementRef.value.longitude = e.latlng.lng;
   });
 
-  // Mise à jour des coordonnées du signalement si en mode édition
   if (props.edit && signalementRef.value.latitude && signalementRef.value.longitude) {
     marker.value.setLatLng([signalementRef.value.latitude, signalementRef.value.longitude]);
     map.value.setView([signalementRef.value.latitude, signalementRef.value.longitude], 13);
@@ -97,16 +125,21 @@ onMounted(async () => {
 });
 
 const handleSubmit = async () => {
-  if (!signalementRef.value.description || !signalementRef.value.latitude || !signalementRef.value.longitude || !signalementRef.value.catId || !signalementRef.value.priorityLevel) {
+  if (!signalementRef.value.description || !signalementRef.value.latitude || !signalementRef.value.longitude || !signalementRef.value.category_id || !signalementRef.value.priority_level) {
     toast.error('Veuillez remplir tous les champs et sélectionner un emplacement sur la carte');
     return;
   }
 
   try {
-    if (props.edit && signalementRef.value.id) {
-      await signalementsStore.updateSignalement(signalementRef.value);
+    const submitData = {
+      ...signalementRef.value,
+      priority_level: reversePriorityMapping[signalementRef.value.priority_level as keyof typeof reversePriorityMapping]
+    };
+
+    if (props.edit && submitData.id) {
+      await signalementsStore.updateSignalement(submitData);
     } else {
-      await signalementsStore.createSignalement(signalementRef.value);
+      await signalementsStore.createSignalement(submitData);
     }
 
     toast.success(props.edit ? 'Signalement modifié avec succès' : 'Signalement ajouté avec succès');
@@ -141,7 +174,7 @@ const handleSubmit = async () => {
         <LabelElement>Catégorie</LabelElement>
       </template>
       <template #input>
-        <SelectElement :options="categoriesOptions" v-model="signalementRef.catId" />
+        <SelectElement :options="categoriesOptions" v-model="signalementRef.category_id" />
       </template>
     </InputgroupElement>
 
@@ -150,7 +183,7 @@ const handleSubmit = async () => {
         <LabelElement>Priorité</LabelElement>
       </template>
       <template #input>
-        <SelectElement :options="priorityOptions" v-model="signalementRef.priorityLevel" />
+        <SelectElement :options="priorityOptions" v-model="signalementRef.priority_level" />
       </template>
     </InputgroupElement>
 

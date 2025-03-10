@@ -1,17 +1,25 @@
 <script setup lang="ts">
 import {
-isAppSidebarToggled,
-toggleAppSidebar,
-toggleAppSidebarWithTransition,
-toggleAppSidebarWithTransitionOnMobile
+  isAppSidebarToggled,
+  toggleAppSidebar,
+  toggleAppSidebarWithTransition,
+  toggleAppSidebarWithTransitionOnMobile
 } from '@/utils/app';
 import { HomeIcon, UserGroupIcon, UsersIcon } from '@heroicons/vue/24/outline';
-import { HomeIcon as HomeIconSolid, UserGroupIcon as UserGroupIconSolid, UsersIcon as UsersIconSolid } from '@heroicons/vue/24/solid';
-import { onMounted } from 'vue';
+import {
+  HomeIcon as HomeIconSolid,
+  UserGroupIcon as UserGroupIconSolid,
+  UsersIcon as UsersIconSolid
+} from '@heroicons/vue/24/solid';
 import { useAuthStore } from '../stores/auth';
+import { storeToRefs } from 'pinia';
 import WrapperElement from './elements/WrapperElement.vue';
 import LocaleChooser from './fragments/LocaleChooser.vue';
 import ThemeSwitcher from './fragments/ThemeSwitcher.vue';
+import { ref, onMounted, computed } from 'vue';
+
+const authStore = useAuthStore();
+const { user, token } = storeToRefs(authStore);
 
 function watchEscapeKey() {
   document.addEventListener('keydown', (e) => {
@@ -45,12 +53,13 @@ const navLinks = [
   }
 ];
 
-const useAuth = useAuthStore();
+const isAuthenticated = computed(() => {
+  return !!token.value && !!user.value;
+});
 
-let user: any = null;
-if (useAuth.user) {
-  user = useAuth.user;
-}
+const filteredNavLinks = computed(() => {
+  return navLinks.filter(link => !link.needsAuth || isAuthenticated.value);
+});
 </script>
 
 <template>
@@ -61,16 +70,18 @@ if (useAuth.user) {
     <WrapperElement class="h-full overflow-x-hidden overflow-y-auto">
       <nav class="h-full flex flex-col justify-between gap-5">
         <ul class="flex flex-col gap-2">
-          <li v-for="link in navLinks" :key="link.name">
+          <li v-for="link in filteredNavLinks" :key="link.name">
             <RouterLink
-              v-if="(link.needsAuth && useAuth.user && user.id) || !link.needsAuth"
               :to="{ name: link.name }"
               class="flex items-center gap-2 p-2 rounded hover:bg-white-darker dark:hover:bg-black-lightest"
               active-class="bg-white-darkend dark:bg-black-lighter"
               @click="toggleAppSidebarWithTransitionOnMobile"
               v-slot="{ isActive }"
             >
-              <component :is="isActive ? link.iconSolid : link.icon" class="w-5 h-5 text-secondary dark:text-primary" />
+              <component
+                :is="isActive ? link.iconSolid : link.icon"
+                class="w-5 h-5 text-secondary dark:text-primary"
+              />
               <span>{{ link.label }}</span>
             </RouterLink>
           </li>

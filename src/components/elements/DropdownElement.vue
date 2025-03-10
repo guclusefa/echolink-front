@@ -14,40 +14,31 @@ function calculateOptionsSizeAndPosition() {
   const minPossileHeight = 32;
   const maxPossileHeight = 192;
 
-  // extract the div element from the ref
   if (!dropdown.value || !dropdown.value.$el) {
     return;
   }
   const el = dropdown.value.$el as HTMLDivElement;
   const rect = el.getBoundingClientRect();
 
-  // get the space above and below the element (for the spaceAbove we need to subtract the topbarHeight)
-  // and get the highest space
   const spaceAbove = rect.top - topbarHeight;
   const spaceBelow = window.innerHeight - rect.bottom;
   const highestSpace = Math.max(spaceAbove, spaceBelow);
 
-  // if the options can be show below, always show them below otherwise show them on the highest space
   optionsOnTop.value = spaceBelow >= maxPossileHeight ? false : highestSpace === spaceAbove;
-  // calculate the height of the options and make sure it is between the min and max possible height
   optionsHeight.value = Math.min(
     Math.max(Math.min(highestSpace - minPossileHeight, maxPossileHeight), minPossileHeight),
     maxPossileHeight
   );
 
-  // get the spaces at the left and right side of the element
-  // and get the highest space
   const spaceLeft = rect.left;
   const spaceRight = window.innerWidth - rect.right;
 
   const highestSpaceLeftOrRight = Math.max(spaceLeft, spaceRight);
 
-  // if the options can be show at the left, always show them at the left otherwise show them at the right
   optionsOnLeft.value = spaceLeft >= highestSpaceLeftOrRight;
 }
 
 onMounted(() => {
-  // calculate the options on top and the button width on mounted
   calculateOptionsSizeAndPosition();
   window.addEventListener('resize', calculateOptionsSizeAndPosition);
 });

@@ -35,7 +35,6 @@ const props = defineProps({
 
 defineEmits(['update:modelValue']);
 
-// ref of select
 const select: Ref<typeof Listbox | null> = ref(null);
 
 const optionsOnTop: Ref<boolean> = ref(false);
@@ -46,22 +45,17 @@ function calculateOptionsSizeAndPosition() {
   const minPossileHeight = 32;
   const maxPossileHeight = 192;
 
-  // extract the div element from the ref
   if (!select.value || !select.value.$el || !select.value.$el.nextElementSibling) {
     return;
   }
   const el = select.value.$el.nextElementSibling as HTMLDivElement;
   const rect = el.getBoundingClientRect();
 
-  // get the space above and below the element (for the spaceAbove we need to subtract the topbarHeight)
-  // and get the highest space
   const spaceAbove = rect.top - topbarHeight;
   const spaceBelow = window.innerHeight - rect.bottom;
   const highestSpace = Math.max(spaceAbove, spaceBelow);
 
-  // if the options can be show below, always show them below otherwise show them on the highest space
   optionsOnTop.value = spaceBelow >= maxPossileHeight ? false : highestSpace === spaceAbove;
-  // calculate the height of the options and make sure it is between the min and max possible height
   optionsHeight.value = Math.min(
     Math.max(Math.min(highestSpace - minPossileHeight, maxPossileHeight), minPossileHeight),
     maxPossileHeight
@@ -69,7 +63,6 @@ function calculateOptionsSizeAndPosition() {
 }
 
 onMounted(() => {
-  // calculate the options on top and the button width on mounted
   calculateOptionsSizeAndPosition();
   window.addEventListener('resize', calculateOptionsSizeAndPosition);
 });

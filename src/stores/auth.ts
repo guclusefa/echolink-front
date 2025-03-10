@@ -3,39 +3,53 @@ import { defineStore } from 'pinia';
 
 export const useAuthStore = defineStore({
   id: 'auth',
-  state: () => ({
-    user: JSON.parse(localStorage.getItem('user') || '{}'),
-    token: localStorage.getItem('token') || ''
-  }),
+  state: () => {
+    const token = localStorage.getItem('token');
+    const user = localStorage.getItem('user');
+    console.log('Initial token:', token);
+    console.log('Initial user:', user);
+    
+    return {
+      user: user ? JSON.parse(user) : null,
+      token: token || ''
+    }
+  },
   actions: {
-    async login(credentials: { username: string; password: string }) {
+    async login(credentials: { email: string; password: string }) {
       try {
+        console.log('Attempting login with:', credentials);
         // Request
-        const response = await api.post('/auth/login', credentials);
+        const response = await api.post('/api/auth/login', {
+          email: credentials.email,
+          password: credentials.password
+        });
+        console.log('Login response:', response.data);
+        
         if (response.status < 200 || response.status >= 300) {
           throw new Error('Invalid response');
         }
+        
         // Response
         const { token } = response.data;
         this.token = token;
-        localStorage.setItem('token', token); // Save token to local storage
+        localStorage.setItem('token', token);
+        console.log('Token stored:', token);
 
         // Get user
         await this.getUser();
       } catch (error) {
-        console.error(error);
+        console.error('Login error:', error);
         throw error;
       }
     },
     async getUser() {
       try {
-        const response = await api.get('/auth/me');
+        const response = await api.get('/api/auth/me');
         this.user = response.data;
-
-        console.log(JSON.stringify(this.user));
-        localStorage.setItem('user', JSON.stringify(this.user)); // Save user to local storage
+        localStorage.setItem('user', JSON.stringify(this.user));
+        console.log('User stored:', this.user);
       } catch (error) {
-        console.error(error);
+        console.error('Get user error:', error);
         throw error;
       }
     },
@@ -48,7 +62,6 @@ export const useAuthStore = defineStore({
       latitude: string;
     }) {
       try {
-        // formattage car yanis sait pas coder
         const body = {
           email: credentials.email,
           name: credentials.name,
@@ -58,21 +71,21 @@ export const useAuthStore = defineStore({
           latitude: credentials.latitude
         };
 
-        // Request
-        const response = await api.post('/auth/register', body);
+        const response = await api.post('/api/auth/register', body);
         if (response.status < 200 || response.status >= 300) {
           throw new Error('Invalid response');
         }
       } catch (error) {
-        console.error(error);
+        console.error('Register error:', error);
         throw error;
       }
     },
     logout() {
       this.token = '';
-      this.user = '';
-      localStorage.removeItem('token'); // Remove token from local storage
-      localStorage.removeItem('user'); // Remove user from local storage
+      this.user = null;
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      console.log('Logged out, token and user removed');
     }
   }
 });
