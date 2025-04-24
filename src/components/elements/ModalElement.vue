@@ -30,7 +30,7 @@ defineEmits(['close', 'validate']);
         <div class="fixed inset-0 bg-opacity-50 bg-black"></div>
       </TransitionChild>
 
-      <div class="fixed inset-0 overflow-y-auto">
+      <div class="fixed inset-0 overflow-y-auto modal">
         <div class="flex min-h-full items-center justify-center p-2 text-center">
           <TransitionChild
             as="template"

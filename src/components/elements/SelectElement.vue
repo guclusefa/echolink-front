@@ -61,6 +61,8 @@ function calculateOptionsSizeAndPosition() {
 
   // if the options can be show below, always show them below otherwise show them on the highest space
   optionsOnTop.value = spaceBelow >= maxPossileHeight ? false : highestSpace === spaceAbove;
+  // if in a modal, always shos on top (check if in "modal" class is present in one of the parents)
+  optionsOnTop.value = document.querySelector('.modal') ? true : optionsOnTop.value;
   // calculate the height of the options and make sure it is between the min and max possible height
   optionsHeight.value = Math.min(
     Math.max(Math.min(highestSpace - minPossileHeight, maxPossileHeight), minPossileHeight),
@@ -75,22 +77,7 @@ onMounted(() => {
 });
 
 function getSelectedLabel() {
-  if (!props.options) {
-    return '';
-  }
-  if (props.multiple && Array.isArray(props.modelValue)) {
-    const values = props.modelValue.map(
-      (value) => props.options.find((option) => option.value === value)?.label
-    );
-    if (values.length === 0) {
-      return '';
-    }
-    let label = values[0];
-    if (props.multiple && values.length > 1) {
-      label += ` +${values.length - 1}`;
-    }
-    return label;
-  }
+ 
   return props.options.find((option) => option.value === props.modelValue)?.label;
 }
 </script>

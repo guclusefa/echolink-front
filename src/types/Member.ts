@@ -1,11 +1,12 @@
 export interface Member {
   _id?: string;
-  firstName: string;
-  lastName: string;
-  job?: number;
-  poste?: number;
   email?: string;
-  passwordHash?: string;
-  teamId?: string;
-  __v?: number;
+  name: string;
+  lastName: string;
+  password?: string;
+  longitude?: number;
+  latitude?: number;
+  created_at?: Date;
+  is_verified?: boolean;
+  verification_token?: string;
 }

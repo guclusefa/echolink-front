@@ -1,12 +1,12 @@
 <script setup lang="ts">
+import SignalementCloseButton from './SignalementCloseButton.vue';
 import SignalementDeleteButton from './SignalementDeleteButton.vue';
 import SignalementEditButton from './SignalementEditButton.vue';
-import SignalementCloseButton from './SignalementCloseButton.vue';
 
 import { useSignalementsStore } from '@/stores/signalements';
 import type { Signalement } from '@/types/Signalement';
-import { onMounted, ref, computed } from 'vue';
 import L from 'leaflet';
+import { computed, onMounted, ref } from 'vue';
 
 import { useAuthStore } from '@/stores/auth';
 
@@ -28,7 +28,7 @@ if (useAuth.user) {
 
 const isContentMine = computed(() => {
   if (!user) return false;
-  return user.id === props.signalement.userId;
+  return user.id === props.signalement.user_id;
 });
 
 let signalementId = props.signalement.id;
@@ -68,11 +68,11 @@ onMounted(() => {
     );
 });
 
-const priorityOptions = ref<{ value: number; label: string }[]>([
-  { value: 1, label: 'Normal' },
-  { value: 2, label: 'Urgent' },
-  { value: 3, label: 'Très urgent' },
-  { value: 4, label: 'Critique' }
+const priorityOptions = ref<{ value: string; label: string }[]>([
+  { value: 'low', label: 'Normal' },
+  { value: 'medium', label: 'Urgent' },
+  { value: 'high', label: 'Très urgent' },
+  { value: 'urgent', label: 'Critique' }
 ]);
 </script>
 
@@ -81,12 +81,13 @@ const priorityOptions = ref<{ value: number; label: string }[]>([
     v-if="props.signalement.id">
     <RouterLink :to="{ name: 'signalement', params: { id: props.signalement.id } }">
       <header class="flex items-center justify-between">
-        <h3 class="text-lg font-semibold">{{ props.signalement.description }}</h3>
+        <h3 class="text-lg font-semibold">{{ props.signalement.title }}</h3>
       </header>
     </RouterLink>
 
+    <p class="text-sm text-gray-500">{{ props.signalement.description }}</p>
     <p class="text-sm">Catégorie: {{ props.signalement.categoryName }}</p>
-    <p class="text-sm">Priorité: {{ priorityOptions.find((p) => p.value === props.signalement.priorityLevel)?.label }}
+    <p class="text-sm">Priorité: {{priorityOptions.find((p) => p.value === props.signalement.priority_level)?.label}}
     </p>
 
     <!-- Carte Leaflet -->

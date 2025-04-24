@@ -3,18 +3,18 @@ import InputElement from '@/components/elements/InputElement.vue';
 import InputgroupElement from '@/components/elements/InputgroupElement.vue';
 import LabelElement from '@/components/elements/LabelElement.vue';
 import SelectElement from '@/components/elements/SelectElement.vue';
+import { useCategoriesStore } from '@/stores/categories';
 import { useSignalementsStore } from '@/stores/signalements';
+import L from 'leaflet';
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { toast } from 'vue3-toastify';
 import ButtonElement from '../elements/ButtonElement.vue';
-import { useCategoriesStore } from '@/stores/categories';
-import L from 'leaflet';
 
 const router = useRouter();
 const props = defineProps({
   signalement: {
-    type: Object as () => { description: string; catId: number; priorityLevel: number; longitude: number; latitude: number },
+    type: Object as () => { description: string; category_id: number; priority_level: string; longitude: number; latitude: number },
     required: false
   },
   okText: {
@@ -28,26 +28,28 @@ const props = defineProps({
 });
 
 const signalementRef = ref({
+  title: '',
   description: '',
-  catId: 0,
-  priorityLevel: 0,
+  category_id: 0,
+  priority_level: 'low',
+  status: 'open',
   longitude: 5.7245,
   latitude: 45.1885,
 });
 
 if (props.signalement) {
-  signalementRef.value = props.signalement;
+  signalementRef.value = JSON.parse(JSON.stringify(props.signalement));
 }
 
 const $emit = defineEmits(['close']);
 const signalementsStore = useSignalementsStore();
 const categoriesStore = useCategoriesStore();
 const categoriesOptions = ref<{ value: string; label: string }[]>([]);
-const priorityOptions = ref<{ value: number; label: string }[]>([
-  { value: 1, label: 'Normal' },
-  { value: 2, label: 'Urgent' },
-  { value: 3, label: 'Très urgent' },
-  { value: 4, label: 'Critique' }
+const priorityOptions = ref<{ value: string; label: string }[]>([
+  { value: 'low', label: 'Normal' },
+  { value: 'medium', label: 'Urgent' },
+  { value: 'high', label: 'Très urgent' },
+  { value: 'urgent', label: 'Critique' }
 ]);
 
 // Leaflet Map
@@ -97,13 +99,13 @@ onMounted(async () => {
 });
 
 const handleSubmit = async () => {
-  if (!signalementRef.value.description || !signalementRef.value.latitude || !signalementRef.value.longitude || !signalementRef.value.catId || !signalementRef.value.priorityLevel) {
+  if (!signalementRef.value.description || !signalementRef.value.latitude || !signalementRef.value.longitude || !signalementRef.value.category_id || !signalementRef.value.priority_level) {
     toast.error('Veuillez remplir tous les champs et sélectionner un emplacement sur la carte');
     return;
   }
 
   try {
-    if (props.edit && signalementRef.value.id) {
+    if (props.edit && signalementRef.value.id) {  
       await signalementsStore.updateSignalement(signalementRef.value);
     } else {
       await signalementsStore.createSignalement(signalementRef.value);
@@ -121,6 +123,14 @@ const handleSubmit = async () => {
 
 <template>
   <form class="flex flex-col gap-5" @submit.prevent="handleSubmit">
+    <InputgroupElement>
+      <template #label>
+        <LabelElement>Titre</LabelElement>
+      </template>
+      <template #input>
+        <InputElement v-model="signalementRef.title" id="title" required />
+      </template>
+    </InputgroupElement>
     <InputgroupElement>
       <template #label>
         <LabelElement>Description</LabelElement>
@@ -141,7 +151,7 @@ const handleSubmit = async () => {
         <LabelElement>Catégorie</LabelElement>
       </template>
       <template #input>
-        <SelectElement :options="categoriesOptions" v-model="signalementRef.catId" />
+        <SelectElement :options="categoriesOptions" v-model="signalementRef.category_id" />
       </template>
     </InputgroupElement>
 
@@ -150,7 +160,7 @@ const handleSubmit = async () => {
         <LabelElement>Priorité</LabelElement>
       </template>
       <template #input>
-        <SelectElement :options="priorityOptions" v-model="signalementRef.priorityLevel" />
+        <SelectElement :options="priorityOptions" v-model="signalementRef.priority_level" />
       </template>
     </InputgroupElement>
 
@@ -167,5 +177,6 @@ const handleSubmit = async () => {
   height: 300px;
   border: 1px solid #ddd;
   border-radius: 8px;
+  z-index: 1;
 }
 </style>

@@ -28,15 +28,6 @@ export const useSignalementsStore = defineStore({
     async fetchSignalements() {
       try {
         const response = await api.get(url);
-        this.signalements = response.data;
-      } catch (error) {
-        console.error(error);
-        throw error;
-      }
-    },
-    async fetchSignalements() {
-      try {
-        const response = await api.get(url);
         const signalements = response.data;
 
         // Tri des signalements en fonction de la distance
@@ -50,10 +41,18 @@ export const useSignalementsStore = defineStore({
               const distanceB = haversineDistance(userLat, userLon, b.latitude, b.longitude);
               return distanceA - distanceB;
             });
-
             this.signalements = signalements;
           });
         }
+      } catch (error) {
+        console.error(error);
+        throw error;
+      }
+    },
+    async fetchSignalement(id: string) {
+      try {
+        const response = await api.get(`${url}/${id}`);
+        this.signalement = response.data;
       } catch (error) {
         console.error(error);
         throw error;
@@ -91,7 +90,7 @@ export const useSignalementsStore = defineStore({
     },
     async closeSignalement(id: string) {
       try {
-        await api.put(`${url}/${id}/close`);
+        await api.post(`${url}/${id}/close`);
       } catch (error) {
         console.error(error);
         throw error;

@@ -1,13 +1,14 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
-import SignalementCard from './SignalementCard.vue';
+import ButtonElement from '@/components/elements/ButtonElement.vue';
 import SelectElement from '@/components/elements/SelectElement.vue';
 import { useCategoriesStore } from '@/stores/categories';
-import ButtonElement from '@/components/elements/ButtonElement.vue';
+import type { Signalement } from '@/types/Signalement';
+import { computed, onMounted, ref } from 'vue';
+import SignalementCard from './SignalementCard.vue';
 
 const props = defineProps({
   signalements: {
-    type: Array,
+    type: Array as () => Signalement[],
     required: true
   }
 });
@@ -16,15 +17,15 @@ const selectedCategory = ref(null); // Default to null instead of ''
 const showClosed = ref(false);
 
 const priorityOptions = [
-  { value: 1, label: 'Normal', color: 'bg-blue-100' },
-  { value: 2, label: 'Urgent', color: 'bg-yellow-100' },
-  { value: 3, label: 'Très urgent', color: 'bg-orange-100' },
-  { value: 4, label: 'Critique', color: 'bg-red-100' }
+  { value: 'low', label: 'Normal', color: 'bg-blue-100' },
+  { value: 'medium', label: 'Urgent', color: 'bg-yellow-100' },
+  { value: 'high', label: 'Très urgent', color: 'bg-orange-100' },
+  { value: 'urgent', label: 'Critique', color: 'bg-red-100' }
 ];
 
 const filteredSignalements = computed(() => {
   return props.signalements.filter(s =>
-    (selectedCategory.value === null || s.categoryId == selectedCategory.value) && // Loose equality for correct filtering
+    (selectedCategory.value === null || s.category_id == selectedCategory.value) && // Loose equality for correct filtering
     (showClosed.value ? s.closed_at : !s.closed_at)
   );
 });
@@ -33,14 +34,14 @@ const groupedSignalements = computed(() => {
   return priorityOptions.map(option => ({
     label: option.label,
     color: option.color,
-    signalements: filteredSignalements.value.filter(s => s.priorityLevel === option.value)
+    signalements: filteredSignalements.value.filter(s => s.priority_level === option.value)
   }));
 });
 
 const categoriesStore = useCategoriesStore();
 const categoriesOptions = computed(() =>
   categoriesStore.categories.map((category) => ({
-    value: category.id.toString(),
+    value: category.id,
     label: category.name
   }))
 );
