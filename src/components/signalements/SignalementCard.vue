@@ -18,6 +18,8 @@ const props = defineProps({
   }
 });
 
+console.log('Signalement:', props.signalement);
+
 const signalementsStore = useSignalementsStore();
 const authStore = useAuthStore();
 
@@ -135,7 +137,7 @@ const handleDelete = async () => {
   if (!confirm('Êtes-vous sûr de vouloir supprimer ce signalement ?')) return;
 
   try {
-    await signalementsStore.deleteSignalement(props.signalement.id);
+    await signalementsStore.deleteSignalement(props.signalement.id.toString());
     toast.success('Signalement supprimé avec succès');
   } catch (error) {
     console.error('Erreur lors de la suppression:', error);
@@ -172,7 +174,7 @@ const handleClose = async () => {
       <div class="p-4 pt-5">
         <div class="flex items-start justify-between gap-2">
           <h3 class="text-lg font-medium line-clamp-2 flex-1">
-            {{ props.signalement.description }}
+            {{ props.signalement.title }}
           </h3>
           <div class="flex flex-col items-end gap-2">
             <span
