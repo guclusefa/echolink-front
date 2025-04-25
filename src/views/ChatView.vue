@@ -2,39 +2,46 @@
   <div class="container mx-auto px-4 py-8">
     <div class="max-w-4xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow">
       <!-- En-tête -->
-      <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+      <div
+        class="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between"
+      >
+        <ButtonElement @click="goBack" secondary class="flex items-center gap-1 px-3 py-1.5">
+          <span class="material-icons text-sm">arrow_back</span>
+          Retour
+        </ButtonElement>
+
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-          Chat du signalement
+          Chat du signalement - {{ description }}
         </h1>
       </div>
 
       <!-- Zone de chat -->
-      <div 
-        id="chat-container"
-        class="h-[calc(100vh-300px)] overflow-y-auto p-4"
-      >
+      <div id="chat-container" class="h-[calc(100vh-300px)] overflow-y-auto p-4">
         <div v-if="loading" class="flex justify-center items-center h-full">
           <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
-        
+
         <template v-else>
-          <div v-if="messages.length === 0" class="text-center text-gray-500 dark:text-gray-400 py-8">
+          <div
+            v-if="messages.length === 0"
+            class="text-center text-gray-500 dark:text-gray-400 py-8"
+          >
             <span class="material-icons text-4xl mb-2">chat</span>
             <p>Aucun message dans ce chat.</p>
             <p class="text-sm">Soyez le premier à écrire !</p>
           </div>
-          
-          <div 
-            v-for="(message, index) in messages" 
+
+          <div
+            v-for="(message, index) in messages"
             :key="index"
             class="mb-4"
-            :class="{'text-right': message.userId === authStore.user?.id}"
+            :class="{ 'text-right': message.userId === authStore.user?.id }"
           >
-            <div 
+            <div
               class="inline-block max-w-[70%] rounded-lg px-4 py-2"
               :class="[
-                message.userId === authStore.user?.id 
-                  ? 'bg-primary text-white' 
+                message.userId === authStore.user?.id
+                  ? 'bg-primary text-white'
                   : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
               ]"
             >
@@ -56,11 +63,7 @@
             placeholder="Votre message..."
             @keyup.enter="sendMessage"
           />
-          <ButtonElement 
-            @click="sendMessage" 
-            primary
-            class="px-6"
-          >
+          <ButtonElement @click="sendMessage" primary class="px-6">
             <span class="material-icons">send</span>
           </ButtonElement>
         </div>
@@ -85,13 +88,20 @@ const messages = ref<any[]>([]);
 const newMessage = ref('');
 const loading = ref(true);
 
+const description = ref(
+  (window.history.state?.description as string) || 'Description non disponible'
+);
+
+const goBack = () => {
+  console.log('Retour vers /signalements');
+  router.push('/signalements');
+};
+
 const checkAndGetId = () => {
   console.log('Route params:', route.params);
   const id = route.params.id;
   if (!id || typeof id !== 'string') {
     console.error('ID invalide:', id);
-    toast.error('ID du signalement invalide');
-    router.push('/');
     return null;
   }
   return id;
@@ -103,9 +113,9 @@ const connectToChat = () => {
 
   messages.value = [];
   loading.value = true;
-  
+
   const socket = chatService.initSocket();
-  
+
   socket.off('connect');
   socket.off('chatHistory');
   socket.off('message');
@@ -126,7 +136,7 @@ const connectToChat = () => {
   socket.on('chatHistory', (history: any[]) => {
     console.log('Historique reçu:', history);
     if (Array.isArray(history)) {
-      messages.value = history.map(msg => ({
+      messages.value = history.map((msg) => ({
         text: msg.message,
         sender: `${msg.name} ${msg.lastName}`,
         userId: msg.user_id,
@@ -135,7 +145,7 @@ const connectToChat = () => {
       loading.value = false;
       scrollToBottom();
     } else {
-      console.error('Format d\'historique invalide:', history);
+      console.error("Format d'historique invalide:", history);
       loading.value = false;
       toast.error('Erreur lors du chargement des messages');
     }
@@ -197,7 +207,7 @@ const disconnectFromChat = () => {
 const sendMessage = () => {
   const id = checkAndGetId();
   if (!id || !newMessage.value.trim()) return;
-  
+
   console.log('Envoi du message pour le signalement:', id);
   try {
     const socket = chatService.initSocket();
@@ -207,8 +217,8 @@ const sendMessage = () => {
     });
     newMessage.value = '';
   } catch (error) {
-    console.error('Erreur lors de l\'envoi du message:', error);
-    toast.error('Erreur lors de l\'envoi du message');
+    console.error("Erreur lors de l'envoi du message:", error);
+    toast.error("Erreur lors de l'envoi du message");
   }
 };
 
@@ -229,7 +239,7 @@ const formatTime = (timestamp: string) => {
 };
 
 onMounted(() => {
-  console.log('Composant monté, vérification de l\'ID...');
+  console.log("Composant monté, vérification de l'ID...");
   const id = checkAndGetId();
   if (id) {
     connectToChat();
@@ -241,13 +251,16 @@ onUnmounted(() => {
   disconnectFromChat();
 });
 
-watch(() => route.params.id, (newId) => {
-  console.log('ID de route changé:', newId);
-  if (newId) {
-    disconnectFromChat();
-    connectToChat();
+watch(
+  () => route.params.id,
+  (newId) => {
+    console.log('ID de route changé:', newId);
+    if (newId) {
+      disconnectFromChat();
+      connectToChat();
+    }
   }
-});
+);
 </script>
 
 <style scoped>
@@ -268,4 +281,4 @@ watch(() => route.params.id, (newId) => {
   background-color: rgba(156, 163, 175, 0.5);
   border-radius: 3px;
 }
-</style> 
+</style>

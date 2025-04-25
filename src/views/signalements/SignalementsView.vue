@@ -8,9 +8,12 @@ import { useAuthStore } from '@/stores/auth';
 import { useSignalementsStore } from '@/stores/signalements';
 import { onMounted, ref } from 'vue';
 import { toast } from 'vue3-toastify';
+import { watch } from 'vue';
+import { useRoute } from 'vue-router';
 
 const loading = ref(false);
 const signalementsStore = useSignalementsStore();
+const route = useRoute();
 const useAuth = useAuthStore();
 let user: any = null;
 const locationAddress = ref('Localisation inconnue');
@@ -26,7 +29,9 @@ const getLocation = () => {
         const latitude = position.coords.latitude;
         const longitude = position.coords.longitude;
         try {
-          const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+          );
           const data = await response.json();
           locationAddress.value = data.display_name || 'Localisation inconnue';
         } catch (error) {
@@ -38,27 +43,45 @@ const getLocation = () => {
       }
     );
   } else {
-    toast.error('La géolocalisation n\'est pas supportée par votre navigateur');
+    toast.error("La géolocalisation n'est pas supportée par votre navigateur");
   }
 };
 
 onMounted(async () => {
   getLocation();
-  try {
+  loading.value = true;
+  await signalementsStore.fetchSignalements();
+  loading.value = false;
+});
+
+const reloadSignalements = async () => {
+  loading.value = true;
+  await signalementsStore.fetchSignalements();
+  loading.value = false;
+};
+
+onMounted(() => {
+  reloadSignalements();
+});
+
+watch(
+  () => route.fullPath,
+  async () => {
     loading.value = true;
     await signalementsStore.fetchSignalements();
-  } catch (error) {
-    toast.error('Erreur lors du chargement des signalements.');
-  } finally {
     loading.value = false;
   }
-});
+);
 </script>
 
 <template>
   <WrapperElement>
-    <div class="text-gray-600 text-sm mb-4">Votre localisation approximative : {{ locationAddress }}</div>
-    <div class="text-gray-600 text-sm mb-4">Les signalements sont triés en fontction des plus proches de votre localisation.</div>
+    <div class="text-gray-600 text-sm mb-4">
+      Votre localisation approximative : {{ locationAddress }}
+    </div>
+    <div class="text-gray-600 text-sm mb-4">
+      Les signalements sont triés en fontction des plus proches de votre localisation.
+    </div>
     <SectionElement title="Signalements">
       <template #actions v-if="useAuth.user && user.id">
         <SignalementAddButton />
