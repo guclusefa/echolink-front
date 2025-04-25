@@ -21,6 +21,7 @@
     "front-plan-de-charge": "file:",
     "leaflet": "^1.9.4",
     "pinia": "^2.1.3",
+    "pinia-plugin-persistedstate": "^4.2.0",
     "socket.io-client": "^4.8.1",
     "vue": "^3.3.4",
     "vue-i18n": "^9.2.2",

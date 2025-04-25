@@ -1,7 +1,7 @@
 import api from '@/services/api';
 import { defineStore } from 'pinia';
-
 import type { Signalement } from '@/types/Signalement';
+import { socket } from '@/services/socket';
 
 const url = '/api/signalements';
 
@@ -65,7 +65,18 @@ export const useSignalementsStore = defineStore({
     async createSignalement(signalement: Signalement) {
       try {
         console.log('Creating signalement with data:', signalement);
-        const response = await api.post(url, signalement);
+    
+        if (!socket.connected) {
+          await new Promise<void>(resolve => socket.on('connect', () => resolve()));
+        }
+    
+        const response = await api.post(url, signalement, {
+          headers: {
+            'x-socket-id': socket.id,
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+    
         console.log('Create signalement response:', response);
         return response.data;
       } catch (error) {

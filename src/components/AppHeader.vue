@@ -29,6 +29,18 @@ function logout() {
     toast.success('Vous êtes déconnecté avec succès');
   });
 }
+
+function formatNotificationMessage(notif: any) {
+  return `Un signalement a été créé : ${notif.title}`;
+}
+
+function toggleNotifications() {
+  if (showNotifications.value) {
+    notifStore.markAllAsRead();
+  }
+
+  showNotifications.value = !showNotifications.value;
+}
 </script>
 
 <template>
@@ -69,7 +81,7 @@ function logout() {
           </div>
           <div class="hidden xxxs:flex items-center gap-3 sm:gap-2">
             <template v-if="useAuth.user && user.id">
-              <IconElement class="relative" @click="showNotifications = !showNotifications">
+              <IconElement class="relative" @click="toggleNotifications">
                 <BellIcon class="w-6 h-6" />
                 <span
                   v-if="notifStore.count > 0"
@@ -88,12 +100,13 @@ function logout() {
                     class="flex flex-col gap-2 max-h-80 overflow-y-auto"
                   >
                     <div
-                      v-for="(notif) in notifStore.latest"
+                      v-for="notif in notifStore.latest.filter((n) => !n.isRead)"
                       :key="notif.id"
-                      class="p-2 border rounded-md hover:bg-gray-100 dark:hover:bg-black-dark cursor-pointer"
+                      class="p-2 border rounded-mddark:hover:bg-black-dark cursor-pointer"
                     >
-                      <div class="font-semibold">{{ notif.title }}</div>
-                      <div class="text-xs text-gray-500 truncate">{{ notif.description }}</div>
+                      <div class="font-semibold">
+                        {{ formatNotificationMessage(notif) }}
+                      </div>
                     </div>
                   </div>
                   <div v-else class="text-sm text-gray-400 text-center p-4">

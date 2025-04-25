@@ -1,17 +1,27 @@
 <script lang="ts" setup>
-import { onMounted } from 'vue';
+import { onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { toast } from 'vue3-toastify';
+import { io } from 'socket.io-client';
+
 import AppFooter from './components/AppFooter.vue';
 import AppHeader from './components/AppHeader.vue';
 import AppSidebar from './components/AppSidebar.vue';
+
 import { useAuthStore } from './stores/auth';
-import { useCategoriesStore } from './stores/categories';
+import { useCategoriesStore } from './stores/categories';;
 
 const authStore = useAuthStore();
+const categoriesStore = useCategoriesStore();
 const router = useRouter();
 
-const categoriesStore = useCategoriesStore();
+const socket = io(import.meta.env.VITE_API_URL || 'http://localhost:3000', {
+  auth: {
+    token: localStorage.getItem('token')
+  },
+  transports: ['websocket'],
+  withCredentials: true
+});
 
 onMounted(async () => {
   if (authStore.token) {
@@ -25,13 +35,18 @@ onMounted(async () => {
       });
     }
   }
+
   if (!categoriesStore.categories.length) {
     try {
       await categoriesStore.fetchCategories();
     } catch (error) {
-      toast.error('Erreur lors du chargement des categories');
+      toast.error('Erreur lors du chargement des catégories');
     }
   }
+});
+
+onUnmounted(() => {
+  socket.off('newSignalement');
 });
 </script>
 
