@@ -11,10 +11,12 @@ import IconElement from './elements/IconElement.vue';
 import InputElement from './elements/InputElement.vue';
 import WrapperElement from './elements/WrapperElement.vue';
 import { useNotificationStore } from '@/stores/notifications';
+import { ref } from 'vue';
 
 const useAuth = useAuthStore();
 const router = useRouter();
 const notifStore = useNotificationStore();
+const showNotifications = ref(false);
 
 let user: any = null;
 if (useAuth.user) {
@@ -67,7 +69,7 @@ function logout() {
           </div>
           <div class="hidden xxxs:flex items-center gap-3 sm:gap-2">
             <template v-if="useAuth.user && user.id">
-              <IconElement class="relative" @click="notifStore.resetCount()">
+              <IconElement class="relative" @click="showNotifications = !showNotifications">
                 <BellIcon class="w-6 h-6" />
                 <span
                   v-if="notifStore.count > 0"
@@ -75,6 +77,29 @@ function logout() {
                 >
                   {{ notifStore.count }}
                 </span>
+
+                <div
+                  v-if="showNotifications"
+                  class="absolute right-0 mt-2 w-80 bg-white dark:bg-black-lightend rounded-xl shadow-lg p-3 z-50"
+                >
+                  <h3 class="text-md font-semibold mb-2">Notifications</h3>
+                  <div
+                    v-if="notifStore.latest.length > 0"
+                    class="flex flex-col gap-2 max-h-80 overflow-y-auto"
+                  >
+                    <div
+                      v-for="(notif) in notifStore.latest"
+                      :key="notif.id"
+                      class="p-2 border rounded-md hover:bg-gray-100 dark:hover:bg-black-dark cursor-pointer"
+                    >
+                      <div class="font-semibold">{{ notif.title }}</div>
+                      <div class="text-xs text-gray-500 truncate">{{ notif.description }}</div>
+                    </div>
+                  </div>
+                  <div v-else class="text-sm text-gray-400 text-center p-4">
+                    Pas de nouvelles notifications
+                  </div>
+                </div>
               </IconElement>
 
               <div class="flex items-center gap-2">

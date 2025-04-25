@@ -1,14 +1,14 @@
 import { io } from "socket.io-client";
 import { useNotificationStore } from "@/stores/notifications";
 
-export function initSocket() {
-  const socket = io(import.meta.env.VITE_API_URL, {
-    auth: {
-      token: localStorage.getItem("token") || "",
-    },
-    transports: ["websocket"],
-  });
+export const socket = io(import.meta.env.VITE_API_URL, {
+  auth: {
+    token: localStorage.getItem("token") || "",
+  },
+  transports: ["websocket"],
+});
 
+export function initSocket() {
   const notifStore = useNotificationStore();
 
   socket.on("connect", () => {
