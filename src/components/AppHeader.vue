@@ -10,10 +10,11 @@ import ButtonElement from './elements/ButtonElement.vue';
 import IconElement from './elements/IconElement.vue';
 import InputElement from './elements/InputElement.vue';
 import WrapperElement from './elements/WrapperElement.vue';
+import { useNotificationStore } from '@/stores/notifications';
 
 const useAuth = useAuthStore();
-
 const router = useRouter();
+const notifStore = useNotificationStore();
 
 let user: any = null;
 if (useAuth.user) {
@@ -66,10 +67,16 @@ function logout() {
           </div>
           <div class="hidden xxxs:flex items-center gap-3 sm:gap-2">
             <template v-if="useAuth.user && user.id">
-              <IconElement class="relative">
+              <IconElement class="relative" @click="notifStore.resetCount()">
                 <BellIcon class="w-6 h-6" />
-                <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs font-semibold flex items-center justify-center rounded-full">3</span>
+                <span
+                  v-if="notifStore.count > 0"
+                  class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs font-semibold flex items-center justify-center rounded-full"
+                >
+                  {{ notifStore.count }}
+                </span>
               </IconElement>
+
               <div class="flex items-center gap-2">
                 <span class="text-sm font-semibold">{{ user.email }}</span>
                 <ButtonElement @click="logout" title="Déconnexion">Déconnexion</ButtonElement>
